@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel
 
 
@@ -72,3 +73,22 @@ class PricePoint(BaseModel):
     low: float
     close: float
     volume: int
+
+
+# ---------- Chat / Agent schemas ----------
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ToolCallInfo(BaseModel):
+    id: str
+    tool_name: str
+    arguments: dict
+
+
+class SSEEvent(BaseModel):
+    type: Literal["tool_call", "tool_result", "response", "done", "error"]
+    content: str = ""
+    tool_call: ToolCallInfo | None = None
+    tool_name: str | None = None

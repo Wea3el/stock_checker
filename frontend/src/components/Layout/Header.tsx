@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { BarChart3, Briefcase, Newspaper, Search } from "lucide-react";
+import { BarChart3, Briefcase, MessageSquare, Newspaper, Search } from "lucide-react";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: BarChart3 },
+  { to: "/chat", label: "AI Analyst", icon: MessageSquare },
   { to: "/portfolio", label: "Portfolio", icon: Briefcase },
   { to: "/news", label: "News", icon: Newspaper },
   { to: "/stocks", label: "Stocks", icon: Search },

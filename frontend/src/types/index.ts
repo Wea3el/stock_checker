@@ -57,3 +57,34 @@ export interface PricePoint {
   close: number;
   volume: number;
 }
+
+// ---------- Chat / Agent types ----------
+
+export interface ToolCallInfo {
+  id: string;
+  tool_name: string;
+  arguments: Record<string, unknown>;
+}
+
+export interface SSEEvent {
+  type: "tool_call" | "tool_result" | "response" | "done" | "error";
+  content: string;
+  tool_call?: ToolCallInfo;
+  tool_name?: string;
+}
+
+export interface ToolCallStep {
+  toolName: string;
+  arguments: Record<string, unknown>;
+  result?: string;
+  status: "calling" | "done" | "error";
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  toolCalls?: ToolCallStep[];
+  isStreaming?: boolean;
+}

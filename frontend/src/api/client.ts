@@ -6,6 +6,7 @@ import type {
   Recommendation,
   StockInfo,
   PricePoint,
+  SSEEvent,
 } from "../types";
 
 const api = axios.create({ baseURL: "/api" });
@@ -77,4 +78,44 @@ export async function getPriceHistory(
     params: { period, interval },
   });
   return data;
+}
+
+// Chat (SSE streaming)
+export async function streamChat(
+  message: string,
+  onEvent: (event: SSEEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const response = await fetch("/api/chat/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+    signal,
+  });
+
+  if (!response.ok) throw new Error(`Chat failed: ${response.status}`);
+
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("data: ")) continue;
+      try {
+        const event: SSEEvent = JSON.parse(trimmed.slice(6));
+        onEvent(event);
+      } catch {
+        // skip malformed events
+      }
+    }
+  }
 }
