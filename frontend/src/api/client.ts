@@ -47,6 +47,11 @@ export async function getRecommendation(
   return data;
 }
 
+export async function getTopPicks(): Promise<Recommendation[]> {
+  const { data } = await api.get<Recommendation[]>("/recommendations/top-picks");
+  return data;
+}
+
 export async function batchAnalyze(
   tickers: string[]
 ): Promise<Recommendation[]> {

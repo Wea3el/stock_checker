@@ -12,8 +12,10 @@ import {
   Newspaper,
 } from "lucide-react";
 import RecommendationCard from "./RecommendationCard";
+import SentimentBadge from "./SentimentBadge";
 import { useHoldings } from "../../hooks/usePortfolio";
 import { useMarketNews } from "../../hooks/useNews";
+import { useTopPicks } from "../../hooks/useRecommendations";
 import { batchAnalyze, getRecommendation } from "../../api/client";
 import type { Recommendation, NewsArticle } from "../../types";
 
@@ -29,6 +31,7 @@ function timeAgo(dateStr: string) {
 export default function Dashboard() {
   const { data: holdings } = useHoldings();
   const { data: marketNews, isLoading: newsLoading } = useMarketNews();
+  const { data: topPicks, isLoading: topPicksLoading } = useTopPicks();
   const [results, setResults] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [autoRan, setAutoRan] = useState(false);
@@ -94,6 +97,54 @@ export default function Dashboard() {
             {singleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Analyze"}
           </button>
         </form>
+      </div>
+
+      {/* Top 10 Stocks to Buy */}
+      <div>
+        <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <ShoppingCart className="w-5 h-5 text-green-600" />
+          Top 10 Stocks to Buy
+        </h2>
+        {topPicksLoading ? (
+          <div className="flex items-center gap-3 text-gray-400 py-8 justify-center">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span>Analyzing 20 popular stocks... this takes a minute on first load</span>
+          </div>
+        ) : topPicks && topPicks.length > 0 ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {topPicks.map((rec, i) => (
+              <Link
+                key={rec.ticker}
+                to={`/stocks/${rec.ticker}`}
+                className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow no-underline block relative"
+              >
+                <span className="absolute top-2 right-3 text-xs font-bold text-gray-300">
+                  #{i + 1}
+                </span>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg font-bold text-gray-900">{rec.ticker}</span>
+                  <SentimentBadge action={rec.action} confidence={rec.confidence} />
+                </div>
+                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{rec.reasoning}</p>
+                <div className="flex flex-wrap gap-1">
+                  {rec.key_factors.slice(0, 2).map((f, j) => (
+                    <span key={j} className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                      {f}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-2 flex items-center gap-1 text-xs text-blue-600">
+                  <Newspaper className="w-3 h-3" />
+                  News & details
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center py-8 text-gray-400">
+            Could not load top picks. Check your API keys.
+          </p>
+        )}
       </div>
 
       {loading && (
