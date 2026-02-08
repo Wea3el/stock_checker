@@ -34,6 +34,11 @@ export async function getNews(ticker: string): Promise<NewsArticle[]> {
   return data;
 }
 
+export async function getMarketNews(): Promise<NewsArticle[]> {
+  const { data } = await api.get<NewsArticle[]>("/news/market");
+  return data;
+}
+
 // Recommendations
 export async function getRecommendation(
   ticker: string

@@ -2,14 +2,14 @@ import { useCallback } from "react";
 import { Upload, FileUp, Loader2 } from "lucide-react";
 import { useUploadPortfolio } from "../../hooks/usePortfolio";
 
-export default function PortfolioUpload() {
+export default function PortfolioUpload({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
   const { mutate, isPending, isError, error } = useUploadPortfolio();
 
   const handleFile = useCallback(
     (file: File) => {
-      mutate(file);
+      mutate(file, { onSuccess: () => onUploadSuccess?.() });
     },
-    [mutate]
+    [mutate, onUploadSuccess]
   );
 
   const handleDrop = useCallback(
