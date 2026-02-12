@@ -11,7 +11,7 @@ from collections.abc import Generator
 from openai import OpenAI
 
 from app.config import settings
-from app.services import stock_service, news_service, portfolio_service
+from app.services import stock_service, news_service, portfolio_service, trading_agents_service
 
 MAX_ITERATIONS = 10
 
@@ -25,6 +25,13 @@ Your approach:
 4. For comparisons, fetch data for all relevant stocks before analyzing.
 5. For portfolio questions, first check what the user holds, then analyze positions as needed.
 6. Always ground your analysis in actual data you retrieve.
+7. You have access to a deep analysis tool (run_deep_analysis) that uses a multi-agent system \
+with a team of AI analysts (technical, sentiment, news, fundamentals), bull/bear debates, \
+risk assessment, and portfolio manager review. Use it when:
+   - The user asks for a thorough or deep analysis of a stock
+   - The user is considering a significant investment decision
+   - The user explicitly requests multi-agent analysis
+   Note: Deep analysis takes 1-2 minutes, so inform the user it will take a moment.
 
 Be concise but thorough. Cite specific data points (prices, changes, news headlines).
 Always remind users this is AI-generated analysis, not financial advice."""
@@ -116,6 +123,30 @@ TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_deep_analysis",
+            "description": (
+                "Run a comprehensive multi-agent deep analysis on a stock using TradingAgents. "
+                "This analyzes fundamentals, sentiment, news, and technicals through a team of "
+                "AI analysts, conducts bull vs bear debates, risk assessment, and produces a "
+                "thorough trading recommendation. Takes 1-2 minutes. Use for important decisions "
+                "or when the user wants detailed analysis."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "Stock ticker symbol, e.g. NVDA",
+                    }
+                },
+                "required": ["ticker"],
+                "additionalProperties": False,
+            },
+        },
+    },
 ]
 
 
@@ -165,6 +196,55 @@ def _execute_tool(tool_name: str, arguments: dict) -> str:
         elif tool_name == "get_portfolio_summary":
             summary = portfolio_service.get_summary()
             return summary.model_dump_json()
+
+        elif tool_name == "run_deep_analysis":
+            ticker = arguments["ticker"].upper()
+            # Check cache first
+            cached = trading_agents_service.get_cached_analysis(ticker)
+            if cached:
+                return json.dumps({
+                    "ticker": cached.ticker,
+                    "action": cached.action,
+                    "analyst_reports": [
+                        {"analyst": r.analyst_name, "summary": r.content[:300]}
+                        for r in cached.analyst_reports
+                    ],
+                    "investment_debate_verdict": (
+                        cached.investment_debate.judge_decision
+                        if cached.investment_debate else ""
+                    ),
+                    "risk_debate_verdict": (
+                        cached.risk_debate.judge_decision
+                        if cached.risk_debate else ""
+                    ),
+                    "trader_decision": cached.trader_decision[:300],
+                    "final_decision": cached.final_trade_decision[:500],
+                })
+            # Run synchronously (the agent loop is generator-based)
+            from datetime import date
+            result = trading_agents_service._run_analysis_sync(
+                ticker, date.today().isoformat()
+            )
+            # Cache it
+            trading_agents_service._cache[f"deep:{ticker}"] = result
+            return json.dumps({
+                "ticker": result.ticker,
+                "action": result.action,
+                "analyst_reports": [
+                    {"analyst": r.analyst_name, "summary": r.content[:300]}
+                    for r in result.analyst_reports
+                ],
+                "investment_debate_verdict": (
+                    result.investment_debate.judge_decision
+                    if result.investment_debate else ""
+                ),
+                "risk_debate_verdict": (
+                    result.risk_debate.judge_decision
+                    if result.risk_debate else ""
+                ),
+                "trader_decision": result.trader_decision[:300],
+                "final_decision": result.final_trade_decision[:500],
+            })
 
         else:
             return json.dumps({"error": f"Unknown tool: {tool_name}"})

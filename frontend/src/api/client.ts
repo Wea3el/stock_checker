@@ -7,6 +7,9 @@ import type {
   StockInfo,
   PricePoint,
   SSEEvent,
+  DeepAnalysis,
+  DeepAnalysisJob,
+  DeepAnalysisSSEEvent,
 } from "../types";
 
 const api = axios.create({ baseURL: "/api" });
@@ -78,6 +81,75 @@ export async function getPriceHistory(
     params: { period, interval },
   });
   return data;
+}
+
+// Deep Analysis (TradingAgents)
+export async function startDeepAnalysis(
+  ticker: string
+): Promise<{ job_id: string; ticker: string }> {
+  const { data } = await api.post<{ job_id: string; ticker: string }>(
+    "/deep-analysis/start",
+    { ticker }
+  );
+  return data;
+}
+
+export async function getDeepAnalysisJob(
+  jobId: string
+): Promise<DeepAnalysisJob> {
+  const { data } = await api.get<DeepAnalysisJob>(
+    `/deep-analysis/job/${jobId}`
+  );
+  return data;
+}
+
+export async function getCachedDeepAnalysis(
+  ticker: string
+): Promise<DeepAnalysis> {
+  const { data } = await api.get<DeepAnalysis>(
+    `/deep-analysis/result/${ticker}`
+  );
+  return data;
+}
+
+export async function streamDeepAnalysis(
+  ticker: string,
+  onEvent: (event: DeepAnalysisSSEEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const response = await fetch("/api/deep-analysis/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticker }),
+    signal,
+  });
+
+  if (!response.ok)
+    throw new Error(`Deep analysis failed: ${response.status}`);
+
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("data: ")) continue;
+      try {
+        const event: DeepAnalysisSSEEvent = JSON.parse(trimmed.slice(6));
+        onEvent(event);
+      } catch {
+        // skip malformed events
+      }
+    }
+  }
 }
 
 // Chat (SSE streaming)

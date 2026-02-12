@@ -9,6 +9,7 @@ const TOOL_LABELS: Record<string, string> = {
   get_market_news: "Checking market news",
   get_portfolio_holdings: "Reading portfolio",
   get_portfolio_summary: "Analyzing portfolio",
+  run_deep_analysis: "Running multi-agent deep analysis (this may take 1-2 minutes)",
 };
 
 export default function ToolCallDisplay({ toolCalls }: { toolCalls: ToolCallStep[] }) {

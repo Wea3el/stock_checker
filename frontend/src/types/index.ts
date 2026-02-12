@@ -58,6 +58,55 @@ export interface PricePoint {
   volume: number;
 }
 
+// ---------- Deep Analysis (TradingAgents) types ----------
+
+export interface AnalystReport {
+  analyst_name: string;
+  content: string;
+}
+
+export interface DebateRecord {
+  bull_arguments: string;
+  bear_arguments: string;
+  judge_decision: string;
+}
+
+export interface RiskDebateRecord {
+  aggressive_arguments: string;
+  conservative_arguments: string;
+  neutral_arguments: string;
+  judge_decision: string;
+}
+
+export interface DeepAnalysis {
+  ticker: string;
+  action: "BUY" | "SELL" | "HOLD";
+  analyst_reports: AnalystReport[];
+  investment_debate: DebateRecord | null;
+  risk_debate: RiskDebateRecord | null;
+  trader_decision: string;
+  investment_plan: string;
+  final_trade_decision: string;
+  analyzed_at: string;
+}
+
+export interface DeepAnalysisJob {
+  job_id: string;
+  ticker: string;
+  status: "pending" | "running" | "completed" | "failed";
+  result: DeepAnalysis | null;
+  error: string | null;
+}
+
+export interface DeepAnalysisSSEEvent {
+  type: "started" | "progress" | "completed" | "error";
+  job_id?: string;
+  ticker?: string;
+  status?: string;
+  result?: DeepAnalysis;
+  content?: string;
+}
+
 // ---------- Chat / Agent types ----------
 
 export interface ToolCallInfo {

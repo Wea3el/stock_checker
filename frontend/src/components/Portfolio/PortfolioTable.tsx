@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Loader2, Brain } from "lucide-react";
 import type { Holding, Recommendation } from "../../types";
 
 function formatCurrency(value: number) {
@@ -69,6 +69,7 @@ export default function PortfolioTable({ holdings, recommendations, analyzing }:
             <th className="py-3 px-4 text-right">Price</th>
             <th className="py-3 px-4 text-right">Value</th>
             <th className="py-3 px-4 text-right">Gain/Loss</th>
+            <th className="py-3 px-4 text-center">Deep</th>
           </tr>
         </thead>
         <tbody>
@@ -107,6 +108,16 @@ export default function PortfolioTable({ holdings, recommendations, analyzing }:
                   value={h.gain_loss_dollar}
                   percent={h.gain_loss_percent}
                 />
+              </td>
+              <td className="py-3 px-4 text-center">
+                <Link
+                  to={`/deep-analysis/${h.symbol}`}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-xs font-medium hover:bg-purple-100 transition-colors no-underline"
+                  title="Run multi-agent deep analysis"
+                >
+                  <Brain className="w-3 h-3" />
+                  Analyze
+                </Link>
               </td>
             </tr>
           ))}

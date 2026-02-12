@@ -7,6 +7,7 @@ import {
   Loader2,
   DollarSign,
   BarChart3,
+  Brain,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -272,6 +273,26 @@ export default function StockDetail() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Deep Analysis */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-purple-600" /> Multi-Agent Deep Analysis
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Comprehensive analysis using a team of AI analysts, bull/bear debate, risk assessment, and portfolio manager review. Takes 1-2 minutes.
+                </p>
+              </div>
+              <Link
+                to={`/deep-analysis/${symbol}`}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors no-underline shrink-0"
+              >
+                Run Deep Analysis
+              </Link>
+            </div>
           </div>
 
           {/* News */}

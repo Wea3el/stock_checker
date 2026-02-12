@@ -13,7 +13,14 @@
       "Bash(python -c:*)",
       "Bash(pip install:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)",
+      "Bash(wmic logicaldisk where \"DeviceID=''C:''\" get FreeSpace /format:value)",
+      "Bash(pip cache:*)",
+      "Bash(findstr:*)",
+      "Bash(del \"\\\\?\\\\C:\\\\Users\\\\Wesley\\\\Desktop\\\\NYU Wesley\\\\stock_checker\\\\nul\")",
+      "Bash(cmd /c:*)"
     ]
   }
 }

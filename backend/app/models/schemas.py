@@ -75,6 +75,50 @@ class PricePoint(BaseModel):
     volume: int
 
 
+# ---------- Deep Analysis (TradingAgents) schemas ----------
+
+class AnalystReport(BaseModel):
+    analyst_name: str
+    content: str
+
+
+class DebateRecord(BaseModel):
+    bull_arguments: str = ""
+    bear_arguments: str = ""
+    judge_decision: str = ""
+
+
+class RiskDebateRecord(BaseModel):
+    aggressive_arguments: str = ""
+    conservative_arguments: str = ""
+    neutral_arguments: str = ""
+    judge_decision: str = ""
+
+
+class DeepAnalysis(BaseModel):
+    ticker: str
+    action: str  # "BUY", "SELL", "HOLD"
+    analyst_reports: list[AnalystReport] = []
+    investment_debate: DebateRecord | None = None
+    risk_debate: RiskDebateRecord | None = None
+    trader_decision: str = ""
+    investment_plan: str = ""
+    final_trade_decision: str = ""
+    analyzed_at: str = ""
+
+
+class DeepAnalysisJob(BaseModel):
+    job_id: str
+    ticker: str
+    status: str = "pending"  # pending, running, completed, failed
+    result: DeepAnalysis | None = None
+    error: str | None = None
+
+
+class DeepAnalyzeRequest(BaseModel):
+    ticker: str
+
+
 # ---------- Chat / Agent schemas ----------
 
 class ChatRequest(BaseModel):
